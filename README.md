@@ -11,3 +11,5 @@ cd backend && npm install --legacy-peer-deps && npm run start:dev
 cd frontend && npm install --legacy-peer-deps && npm run dev
 ```
 Pruebas: `npm test` (backend, Jest). Lint: `npm run lint`.
+
+Verificación de CI (CP-S2-01).
