@@ -9,6 +9,29 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    services:
+      # PostgreSQL efímero solo para las pruebas de integración.
+      # Autenticación "trust": no hace falta ninguna contraseña en el repo.
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: sgn_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ''
+      DB_NAME: sgn_test
+      DB_TEST_NAME: sgn_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,6 +43,10 @@ jobs:
       - run: npx eslint "{src,test}/**/*.ts"
       - run: npm run build
       - run: npm test
+      - name: Migraciones sobre base vacía (CP-S2-04)
+        run: npx typeorm migration:run -d dist/data-source.js
+      - name: Pruebas de integración (CP-S2-04, 05, 06)
+        run: npm run test:int
   frontend:
     runs-on: ubuntu-latest
     defaults:
