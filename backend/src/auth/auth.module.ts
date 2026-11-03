@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
-import { Usuario } from '../nucleo/entities/usuario.entity';
+import { ConsentimientoModule } from '../consentimiento/consentimiento.module';
 import { AuthController } from './auth.controller';
 import { CognitoAuthGuard } from './cognito-auth.guard';
 import { COGNITO_VERIFIER, RELOJ } from './cognito.constants';
 import { PerfilService } from './perfil.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Usuario])],
+  imports: [ConsentimientoModule],
   controllers: [AuthController],
   providers: [
     {

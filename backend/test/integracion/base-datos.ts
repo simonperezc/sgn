@@ -7,6 +7,8 @@ import { Negocio } from '../../src/nucleo/entities/negocio.entity';
 import { Cliente } from '../../src/nucleo/entities/cliente.entity';
 import { Servicio } from '../../src/nucleo/entities/servicio.entity';
 import { Turno } from '../../src/nucleo/entities/turno.entity';
+import { PoliticaPrivacidad } from '../../src/consentimiento/entities/politica-privacidad.entity';
+import { ConsentimientoInformado } from '../../src/consentimiento/entities/consentimiento-informado.entity';
 
 // Lee backend/.env si existe, sin pisar variables ya definidas (como las del CI).
 const envPath = join(__dirname, '../../.env');
@@ -33,7 +35,15 @@ export async function prepararBaseDePrueba(): Promise<DataSource> {
     database,
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    entities: [Usuario, Negocio, Cliente, Servicio, Turno],
+    entities: [
+      Usuario,
+      Negocio,
+      Cliente,
+      Servicio,
+      Turno,
+      PoliticaPrivacidad,
+      ConsentimientoInformado,
+    ],
     migrations: [join(__dirname, '../../src/migrations/*.ts')],
   });
   await dataSource.initialize();
