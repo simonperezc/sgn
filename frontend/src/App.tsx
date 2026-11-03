@@ -11,6 +11,10 @@ export default function App() {
   const idToken = auth.user?.id_token
 
   useEffect(() => {
+    if (auth.error) console.error('[auth]', auth.error)
+  }, [auth.error])
+
+  useEffect(() => {
     if (!idToken) return
     obtenerPerfil(idToken)
       .then(setPerfil)
@@ -29,12 +33,19 @@ export default function App() {
     return <p>Cargando…</p>
   }
 
-  if (auth.error) {
-    // RNF-31: sin detalles técnicos y sin conceder acceso.
+    if (auth.error) {
+    // RNF-31: sin detalles técnicos y sin conceder acceso. Puede ser Cognito
+    // caído o una sesión guardada en el navegador que no se puede leer.
     return (
       <main>
-        <p>El servicio de inicio de sesión no está disponible en este momento.</p>
-        <button onClick={() => void auth.signinRedirect()}>Reintentar</button>
+        <p>No pudimos conectar con el inicio de sesión. Volvé a intentarlo en unos minutos.</p>
+        <button
+          onClick={() => {
+            void auth.removeUser().then(() => auth.signinRedirect())
+          }}
+        >
+          Reintentar
+        </button>
       </main>
     )
   }
