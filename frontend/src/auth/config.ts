@@ -28,6 +28,7 @@ export const oidcConfig: AuthProviderProps = {
   redirect_uri: cognito.urlRetorno,
   response_type: 'code',
   scope: 'openid email profile',
+  extraQueryParams: { lang: 'es' },
   // Al volver de Cognito, saca ?code=...&state=... de la barra de direcciones.
   onSigninCallback: () => {
     window.history.replaceState({}, document.title, window.location.pathname)
