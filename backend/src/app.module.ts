@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NucleoModule } from './nucleo/nucleo.module';
 import { AuthModule } from './auth/auth.module';
 import { ConsentimientoModule } from './consentimiento/consentimiento.module';
+import { SaludModule } from './salud/salud.module';
+import { opcionesSsl } from './config/ssl';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -19,6 +21,7 @@ import { AppService } from './app.service';
         database: config.getOrThrow<string>('DB_NAME'),
         username: config.getOrThrow<string>('DB_USER'),
         password: config.getOrThrow<string>('DB_PASSWORD'),
+        ssl: opcionesSsl(config.get<string>('DB_SSL')),
         autoLoadEntities: true,
         synchronize: false,
       }),
@@ -26,6 +29,7 @@ import { AppService } from './app.service';
     NucleoModule,
     ConsentimientoModule,
     AuthModule,
+    SaludModule,
   ],
   controllers: [AppController],
   providers: [AppService],
