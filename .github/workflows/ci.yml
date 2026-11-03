@@ -42,7 +42,7 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - run: npx eslint "{src,test}/**/*.ts"
       - run: npm run build
-      - run: npm test
+      - run: npm test -- --verbose
       - name: Migraciones sobre base vacía (CP-S2-04)
         run: npx typeorm migration:run -d dist/data-source.js
       - name: Pruebas de integración (CP-S2-04, 05, 06)
