@@ -1,0 +1,63 @@
+name: Deploy frontend
+
+# CD del frontend en Azure Static Web Apps. A main solo se llega por PR con el CI en verde.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Compilar con la configuración de producción
+        working-directory: frontend
+        env:
+          VITE_COGNITO_REGION: ${{ vars.VITE_COGNITO_REGION }}
+          VITE_COGNITO_USER_POOL_ID: ${{ vars.VITE_COGNITO_USER_POOL_ID }}
+          VITE_COGNITO_CLIENT_ID: ${{ vars.VITE_COGNITO_CLIENT_ID }}
+          VITE_COGNITO_DOMAIN: ${{ vars.VITE_COGNITO_DOMAIN }}
+          VITE_API_URL: ${{ vars.AZURE_WEBAPP_URL }}
+        run: |
+          npm ci --legacy-peer-deps
+          npm run build
+
+      - name: Desplegar en Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_SWA_TOKEN }}
+          action: upload
+          app_location: frontend/dist
+          skip_app_build: true
+          skip_api_build: true
+
+      - name: Comprobar que el frontend responde
+        run: |
+          url="${{ vars.AZURE_SWA_URL }}"
+          for intento in $(seq 1 10); do
+            if curl -sf "$url" | grep -q '<div id="root">'; then
+              echo "GET $url -> 200 (index.html de la app)"
+              exit 0
+            fi
+            echo "Intento $intento: todavía no responde; reintento en 15 s"
+            sleep 15
+          done
+          echo "El frontend no respondió en $url"
+          exit 1
