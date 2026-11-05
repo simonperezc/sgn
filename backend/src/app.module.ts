@@ -24,6 +24,8 @@ import { AppService } from './app.service';
         ssl: opcionesSsl(config.get<string>('DB_SSL')),
         autoLoadEntities: true,
         synchronize: false,
+        migrations: [__dirname + '/migrations/*.js'],
+        migrationsRun: config.get<string>('DB_MIGRATIONS_RUN') === 'true',
       }),
     }),
     NucleoModule,
