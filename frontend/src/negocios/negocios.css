@@ -1,0 +1,158 @@
+.area {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  text-align: left;
+}
+
+.area *,
+.area *::before,
+.area *::after {
+  box-sizing: border-box;
+}
+
+.area h2 {
+  margin: 8px 0 12px;
+}
+
+.area-cabecera,
+.selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.selector label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.selector select {
+  max-width: 100%;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formulario > label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formulario input:not([type='checkbox'], [type='radio']) {
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 8px;
+  font: inherit;
+}
+
+.formulario fieldset {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.formulario button,
+.area-cabecera button {
+  min-height: 40px;
+  padding: 6px 14px;
+  font: inherit;
+}
+
+.formulario button.boton-texto {
+  min-height: 32px;
+  padding: 2px 8px;
+  font-size: 0.875em;
+}
+
+.error {
+  color: #d92d20;
+  font-size: 0.9em;
+}
+
+.aviso {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--accent-bg);
+}
+
+.horario-dia {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.horario-dia:last-child {
+  border-bottom: none;
+}
+
+.horario-abierto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.horario-franjas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.horario-franja {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.horario-franja .boton-texto {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.opcion-plantilla {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.paneles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.paneles li {
+  padding: 14px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  text-align: center;
+}

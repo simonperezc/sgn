@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from 'react-oidc-context'
 import {
   ConsentimientoRequeridoError,
@@ -8,6 +8,7 @@ import {
 } from './auth/api'
 import { cerrarSesion } from './auth/cerrar-sesion'
 import ClausulaConsentimiento from './consentimiento/ClausulaConsentimiento'
+import AreaNegocios from './negocios/AreaNegocios'
 import {
   borrarConsentimientoPendiente,
   guardarConsentimientoPendiente,
@@ -30,6 +31,14 @@ export default function App() {
   )
 
   const idToken = auth.user?.id_token
+
+  /** CP-S2-22: token rechazado por el backend → pedir iniciar sesión de nuevo. */
+  const sesionVencida = useCallback(() => {
+    setPerfil(null)
+    void auth.removeUser().then(() => {
+      setAviso('Tu sesión venció. Iniciá sesión nuevamente.')
+    })
+  }, [auth])
 
   useEffect(() => {
     if (auth.error) console.error('[auth]', auth.error)
@@ -135,17 +144,22 @@ export default function App() {
     )
   }
 
+  if (perfil && idToken) {
+    return (
+      <AreaNegocios
+        idToken={idToken}
+        perfil={perfil}
+        onSesionVencida={sesionVencida}
+        onCerrarSesion={() => void cerrarSesion(auth)}
+      />
+    )
+  }
+
   return (
     <main>
       <h1>Sistema de gestión de negocios</h1>
       {aviso && <p role="alert">{aviso}</p>}
-      {perfil ? (
-        <p>
-          Hola, {perfil.nombre} ({perfil.correo})
-        </p>
-      ) : (
-        <p>Cargando tu perfil…</p>
-      )}
+      <p>Cargando tu perfil…</p>
       <button onClick={() => void cerrarSesion(auth)}>Cerrar sesión</button>
     </main>
   )
