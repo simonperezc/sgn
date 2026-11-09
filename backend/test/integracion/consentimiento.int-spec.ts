@@ -25,9 +25,10 @@ describe('Consentimiento informado (CU 2)', () => {
   it('CP-S2-07: la política vigente informa la finalidad del tratamiento de los datos', async () => {
     const politica = await servicio.obtenerPoliticaVigente();
 
-    expect(politica.version).toBe('1.0');
+    expect(politica.version).toBe('1.1');
     expect(politica.texto).toContain('Finalidad:');
     expect(politica.texto).toContain('Estados Unidos');
+    expect(politica.texto).toContain('Microsoft Azure');
   });
 
   it('CP-S2-07 / CP-S2-08: al aceptar registra fecha y hora, versión de la política y estado vigente', async () => {
@@ -42,7 +43,7 @@ describe('Consentimiento informado (CU 2)', () => {
         where: { id: consentimiento.id },
         relations: { politica: true },
       });
-    expect(guardado.politica.version).toBe('1.0');
+    expect(guardado.politica.version).toBe('1.1');
     expect(guardado.estado).toBe(EstadoConsentimiento.ACEPTADO);
     expect(guardado.fechaHora.getTime()).toBeGreaterThanOrEqual(antes - 1000);
     expect(guardado.fechaHora.getTime()).toBeLessThanOrEqual(Date.now() + 1000);
