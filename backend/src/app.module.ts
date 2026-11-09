@@ -5,6 +5,8 @@ import { NucleoModule } from './nucleo/nucleo.module';
 import { AuthModule } from './auth/auth.module';
 import { ConsentimientoModule } from './consentimiento/consentimiento.module';
 import { SaludModule } from './salud/salud.module';
+import { NegociosModule } from './nucleo/negocios/negocios.module';
+import { OdontologiaModule } from './modulos/odontologia/odontologia.module';
 import { opcionesSsl } from './config/ssl';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -31,6 +33,8 @@ import { AppService } from './app.service';
     NucleoModule,
     ConsentimientoModule,
     AuthModule,
+    NegociosModule,
+    OdontologiaModule,
     SaludModule,
   ],
   controllers: [AppController],
