@@ -8,6 +8,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router'
+import Agenda from '../agenda/Agenda'
 import { SesionVencidaError, type Perfil } from '../auth/api'
 import AltaNegocio from './AltaNegocio'
 import { listarNegocios, type Negocio } from './api'
@@ -156,6 +157,21 @@ export default function AreaNegocios({
                       )
                       void navegar(`/negocios/${guardado.id}`)
                     }}
+                  />
+                )}
+              </ConNegocio>
+            }
+          />
+          <Route
+            path="/negocios/:negocioId/agenda"
+            element={
+              <ConNegocio negocios={negocios}>
+                {(negocio) => (
+                  <Agenda
+                    key={negocio.id}
+                    idToken={idToken}
+                    negocioId={negocio.id}
+                    onSesionVencida={onSesionVencida}
                   />
                 )}
               </ConNegocio>

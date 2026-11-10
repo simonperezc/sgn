@@ -70,19 +70,22 @@ export class DatosInvalidosError extends Error {
 /** El backend rechazó la operación con un mensaje para mostrar. */
 export class OperacionRechazadaError extends Error {
   readonly status: number
+  /** Cuerpo de la respuesta, por ejemplo con horarios sugeridos. */
+  readonly detalle: Record<string, unknown>
 
-  constructor(status: number, mensaje: string) {
+  constructor(status: number, mensaje: string, detalle: Record<string, unknown> = {}) {
     super(mensaje)
     this.status = status
+    this.detalle = detalle
   }
 }
 
 /** Convierte una respuesta fallida en el error que corresponde mostrar. */
-async function errorDe(respuesta: Response): Promise<Error> {
+export async function errorDe(respuesta: Response): Promise<Error> {
   if (respuesta.status === 401) {
     return new SesionVencidaError()
   }
-  const cuerpo = (await respuesta.json().catch(() => ({}))) as {
+  const cuerpo = (await respuesta.json().catch(() => ({}))) as Record<string, unknown> & {
     message?: unknown
     campos?: ErrorCampo[]
   }
@@ -93,10 +96,10 @@ async function errorDe(respuesta: Response): Promise<Error> {
     typeof cuerpo.message === 'string' && respuesta.status < 500
       ? cuerpo.message
       : 'No pudimos completar la operación. Probá de nuevo en unos minutos.'
-  return new OperacionRechazadaError(respuesta.status, mensaje)
+  return new OperacionRechazadaError(respuesta.status, mensaje, cuerpo)
 }
 
-function cabeceras(idToken: string): HeadersInit {
+export function cabeceras(idToken: string): HeadersInit {
   return {
     Authorization: `Bearer ${idToken}`,
     'Content-Type': 'application/json',
