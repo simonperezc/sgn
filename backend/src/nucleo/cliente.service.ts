@@ -23,4 +23,15 @@ export class ClienteService {
       order: { nombre: 'ASC' },
     });
   }
+
+  /** Busca por el teléfono ya normalizado, dentro del negocio (RF-91). */
+  async buscarPorTelefono(
+    negocioId: string,
+    telefono: string,
+  ): Promise<Cliente | null> {
+    if (!negocioId) {
+      throw new Error('Se requiere el negocio para consultar clientes');
+    }
+    return this.clientes.findOneBy({ negocioId, telefono });
+  }
 }

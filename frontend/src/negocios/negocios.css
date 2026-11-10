@@ -193,3 +193,60 @@
   padding: 4px 10px;
   font: inherit;
 }
+
+.navegacion-dia {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.navegacion-dia button,
+.navegacion-dia input,
+.boton-principal,
+.fila-busqueda button,
+.sugerencias button {
+  min-height: 40px;
+  padding: 6px 12px;
+  font: inherit;
+}
+
+.fecha-larga {
+  margin: 6px 0 12px;
+  color: var(--text-h);
+}
+
+.fecha-larga::first-letter {
+  text-transform: uppercase;
+}
+
+.fila-busqueda {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.formulario select {
+  width: 100%;
+  min-height: 40px;
+  font: inherit;
+}
+
+.sugerencias {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.turno-cancelado {
+  opacity: 0.6;
+}
+
+.turno-cancelado strong {
+  text-decoration: line-through;
+}
+
+.etiqueta {
+  font-size: 0.85em;
+  font-weight: 600;
+}
