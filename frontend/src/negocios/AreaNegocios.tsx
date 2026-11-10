@@ -1,9 +1,19 @@
-import { useEffect, useState } from 'react'
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
+import { useEffect, useState, type ReactNode } from 'react'
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router'
 import { SesionVencidaError, type Perfil } from '../auth/api'
 import AltaNegocio from './AltaNegocio'
 import { listarNegocios, type Negocio } from './api'
+import EditarNegocio from './EditarNegocio'
 import PanelNegocio from './PanelNegocio'
+import Servicios from './Servicios'
 import './negocios.css'
 
 interface Props {
@@ -11,6 +21,26 @@ interface Props {
   perfil: Perfil
   onSesionVencida: () => void
   onCerrarSesion: () => void
+}
+
+/** Resuelve el negocio de la ruta entre los negocios del usuario. */
+function ConNegocio({
+  negocios,
+  children,
+}: {
+  negocios: Negocio[]
+  children: (negocio: Negocio) => ReactNode
+}) {
+  const { negocioId } = useParams()
+  const negocio = negocios.find((n) => n.id === negocioId)
+  if (!negocio) {
+    return (
+      <p role="alert">
+        No encontramos ese negocio. <Link to="/">Volver al inicio</Link>
+      </p>
+    )
+  }
+  return children(negocio)
 }
 
 /** Área privada: alta de negocios, selector del negocio activo y paneles. */
@@ -44,7 +74,8 @@ export default function AreaNegocios({
     }
   }, [idToken, onSesionVencida])
 
-  const activo = negocios?.find((n) => pathname === `/negocios/${n.id}`)
+  const idActivo = /^\/negocios\/([^/]+)/.exec(pathname)?.[1]
+  const activo = negocios?.find((n) => n.id === idActivo)
 
   return (
     <main className="area">
@@ -101,7 +132,50 @@ export default function AreaNegocios({
               />
             }
           />
-          <Route path="/negocios/:negocioId" element={<PanelNegocio negocios={negocios} />} />
+          <Route
+            path="/negocios/:negocioId"
+            element={
+              <ConNegocio negocios={negocios}>
+                {(negocio) => <PanelNegocio idToken={idToken} negocio={negocio} />}
+              </ConNegocio>
+            }
+          />
+          <Route
+            path="/negocios/:negocioId/datos"
+            element={
+              <ConNegocio negocios={negocios}>
+                {(negocio) => (
+                  <EditarNegocio
+                    key={negocio.id}
+                    idToken={idToken}
+                    negocio={negocio}
+                    onSesionVencida={onSesionVencida}
+                    onGuardado={(guardado) => {
+                      setNegocios(
+                        negocios.map((n) => (n.id === guardado.id ? guardado : n)),
+                      )
+                      void navegar(`/negocios/${guardado.id}`)
+                    }}
+                  />
+                )}
+              </ConNegocio>
+            }
+          />
+          <Route
+            path="/negocios/:negocioId/servicios"
+            element={
+              <ConNegocio negocios={negocios}>
+                {(negocio) => (
+                  <Servicios
+                    key={negocio.id}
+                    idToken={idToken}
+                    negocioId={negocio.id}
+                    onSesionVencida={onSesionVencida}
+                  />
+                )}
+              </ConNegocio>
+            }
+          />
           <Route path="*" element={<Navigate replace to="/" />} />
         </Routes>
       )}

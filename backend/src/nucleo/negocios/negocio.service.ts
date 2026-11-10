@@ -1,10 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Negocio } from '../entities/negocio.entity';
+import { NegocioFoto } from '../entities/negocio-foto.entity';
 import { Usuario } from '../entities/usuario.entity';
 import { Plantilla } from '../entities/enums';
 import { panelesPorPlantilla } from './paneles';
+import { detectarTipoImagen } from './foto';
 import {
   ErrorCampo,
   HorarioDisponible,
@@ -26,9 +32,10 @@ export interface NegocioVista {
   horarioDisponible: Record<string, unknown> | null;
   plantilla: Plantilla;
   paneles: string[];
+  tieneFoto: boolean;
 }
 
-export function aVista(negocio: Negocio): NegocioVista {
+function aVista(negocio: Negocio, tieneFoto: boolean): NegocioVista {
   return {
     id: negocio.id,
     nombre: negocio.nombre,
@@ -37,6 +44,7 @@ export function aVista(negocio: Negocio): NegocioVista {
     horarioDisponible: negocio.horarioDisponible,
     plantilla: negocio.plantilla,
     paneles: panelesPorPlantilla(negocio.plantilla),
+    tieneFoto,
   };
 }
 
@@ -47,6 +55,8 @@ export class NegocioService {
     private readonly negocios: Repository<Negocio>,
     @InjectRepository(Usuario)
     private readonly usuarios: Repository<Usuario>,
+    @InjectRepository(NegocioFoto)
+    private readonly fotos: Repository<NegocioFoto>,
   ) {}
 
   /** Crea un negocio del usuario autenticado (RF-15, RF-17, RF-22, RF-23). */
@@ -70,7 +80,7 @@ export class NegocioService {
         propietarioId: propietario.id,
       }),
     );
-    return aVista(negocio);
+    return aVista(negocio, false);
   }
 
   /** Negocios cuyo dueño es el usuario autenticado (RF-15). */
@@ -79,7 +89,36 @@ export class NegocioService {
       where: { propietario: { idIAM } },
       order: { creadoEn: 'ASC' },
     });
-    return negocios.map(aVista);
+    const conFoto = await this.fotos.find({
+      select: { negocioId: true },
+      where: { negocioId: In(negocios.map((negocio) => negocio.id)) },
+    });
+    const ids = new Set(conFoto.map((foto) => foto.negocioId));
+    return negocios.map((negocio) => aVista(negocio, ids.has(negocio.id)));
+  }
+
+  async vista(negocio: Negocio): Promise<NegocioVista> {
+    const tieneFoto = await this.fotos.existsBy({ negocioId: negocio.id });
+    return aVista(negocio, tieneFoto);
+  }
+
+  /** Guarda la foto solo si el contenido es una imagen (RF-18, CP-S3-17). */
+  async guardarFoto(negocioId: string, datos?: Buffer): Promise<void> {
+    const tipo = datos ? detectarTipoImagen(datos) : null;
+    if (!datos || !tipo) {
+      throw new BadRequestException(
+        'El archivo no es una imagen válida. Usá una foto JPG, PNG o WebP.',
+      );
+    }
+    await this.fotos.save({ negocioId, tipo, datos });
+  }
+
+  async obtenerFoto(negocioId: string): Promise<NegocioFoto> {
+    const foto = await this.fotos.findOneBy({ negocioId });
+    if (!foto) {
+      throw new NotFoundException('El negocio no tiene foto');
+    }
+    return foto;
   }
 
   /** Edita los datos del negocio. La plantilla no se puede cambiar (RF-22). */
@@ -120,7 +159,7 @@ export class NegocioService {
     if ('direccion' in datos) {
       negocio.direccion = textoOpcional(datos.direccion);
     }
-    return aVista(await this.negocios.save(negocio));
+    return this.vista(await this.negocios.save(negocio));
   }
 
   private exigirValidos(errores: (ErrorCampo | null)[]): void {

@@ -1,10 +1,25 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  HttpCode,
+  Patch,
+  Post,
+  Put,
+  StreamableFile,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CognitoAuthGuard } from '../../auth/cognito-auth.guard';
 import { Identidad } from '../../auth/identidad.decorator';
 import type { IdentidadIAM } from '../../auth/identidad-iam';
 import { Negocio } from '../entities/negocio.entity';
 import { NegocioAccesoGuard, NegocioActual } from './negocio-acceso.guard';
-import { aVista, NegocioService } from './negocio.service';
+import { TAMANO_MAXIMO_FOTO } from './foto';
+import { NegocioService } from './negocio.service';
 import type { DatosNegocio } from './negocio.service';
 
 @Controller('negocios')
@@ -28,7 +43,7 @@ export class NegocioController {
   @Get(':negocioId')
   @UseGuards(NegocioAccesoGuard)
   obtener(@NegocioActual() negocio: Negocio) {
-    return aVista(negocio);
+    return this.negocios.vista(negocio);
   }
 
   @Patch(':negocioId')
@@ -38,5 +53,26 @@ export class NegocioController {
     @Body() datos: DatosNegocio = {},
   ) {
     return this.negocios.actualizar(negocio, datos ?? {});
+  }
+
+  @Put(':negocioId/foto')
+  @HttpCode(204)
+  @UseGuards(NegocioAccesoGuard)
+  @UseInterceptors(
+    FileInterceptor('foto', { limits: { fileSize: TAMANO_MAXIMO_FOTO } }),
+  )
+  async guardarFoto(
+    @NegocioActual() negocio: Negocio,
+    @UploadedFile() archivo?: { buffer: Buffer },
+  ): Promise<void> {
+    await this.negocios.guardarFoto(negocio.id, archivo?.buffer);
+  }
+
+  @Get(':negocioId/foto')
+  @Header('X-Content-Type-Options', 'nosniff')
+  @UseGuards(NegocioAccesoGuard)
+  async obtenerFoto(@NegocioActual() negocio: Negocio) {
+    const foto = await this.negocios.obtenerFoto(negocio.id);
+    return new StreamableFile(foto.datos, { type: foto.tipo });
   }
 }

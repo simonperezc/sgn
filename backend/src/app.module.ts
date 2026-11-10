@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConsentimientoModule } from './consentimiento/consentimiento.module';
 import { SaludModule } from './salud/salud.module';
 import { NegociosModule } from './nucleo/negocios/negocios.module';
+import { ServiciosModule } from './nucleo/servicios/servicios.module';
 import { OdontologiaModule } from './modulos/odontologia/odontologia.module';
 import { opcionesSsl } from './config/ssl';
 import { AppController } from './app.controller';
@@ -34,6 +35,7 @@ import { AppService } from './app.service';
     ConsentimientoModule,
     AuthModule,
     NegociosModule,
+    ServiciosModule,
     OdontologiaModule,
     SaludModule,
   ],

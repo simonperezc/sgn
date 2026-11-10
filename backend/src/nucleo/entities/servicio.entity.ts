@@ -24,6 +24,10 @@ export class Servicio {
   @Column({ type: 'numeric', precision: 12, scale: 2, nullable: true })
   precio: string | null;
 
+  /** Falso cuando se eliminó: deja de ofrecerse, pero el historial lo conserva. */
+  @Column({ default: true })
+  activo: boolean;
+
   @Column({ name: 'negocio_id', type: 'uuid' })
   negocioId: string;
 

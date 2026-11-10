@@ -1,5 +1,6 @@
-import { Link, useParams } from 'react-router'
+import { Link } from 'react-router'
 import type { Negocio, Plantilla } from './api'
+import FotoNegocio from './FotoNegocio'
 
 const NOMBRE_PLANTILLA: Record<Plantilla, string> = {
   ODONTOLOGIA: 'Odontología',
@@ -20,27 +21,39 @@ const NOMBRE_PANEL: Record<string, string> = {
   'planes-alimentacion': 'Planes de alimentación',
 }
 
-/** Panel general: muestra únicamente los paneles de la plantilla (RF-23). */
-export default function PanelNegocio({ negocios }: { negocios: Negocio[] }) {
-  const { negocioId } = useParams()
-  const negocio = negocios.find((n) => n.id === negocioId)
+/** Paneles que ya tienen pantalla; el resto llega en sus sprints. */
+const PANELES_DISPONIBLES = new Set(['servicios'])
 
-  if (!negocio) {
-    return (
-      <p role="alert">
-        No encontramos ese negocio. <Link to="/">Volver al inicio</Link>
-      </p>
-    )
-  }
+interface Props {
+  idToken: string
+  negocio: Negocio
+}
 
+/** Panel general: datos del negocio y paneles de su plantilla (RF-18, RF-23). */
+export default function PanelNegocio({ idToken, negocio }: Props) {
   return (
     <section>
+      {negocio.tieneFoto && <FotoNegocio idToken={idToken} negocioId={negocio.id} />}
       <h2>{negocio.nombre}</h2>
       <p>Plantilla: {NOMBRE_PLANTILLA[negocio.plantilla]}</p>
+      {negocio.direccion && <p>Dirección: {negocio.direccion}</p>}
+      {negocio.contacto && <p>Contacto: {negocio.contacto}</p>}
+      <p>
+        <Link to={`/negocios/${negocio.id}/datos`}>Editar datos del negocio</Link>
+      </p>
       <ul className="paneles">
-        {negocio.paneles.map((panel) => (
-          <li key={panel}>{NOMBRE_PANEL[panel] ?? panel}</li>
-        ))}
+        {negocio.paneles.map((panel) => {
+          const nombre = NOMBRE_PANEL[panel] ?? panel
+          return (
+            <li key={panel}>
+              {PANELES_DISPONIBLES.has(panel) ? (
+                <Link to={`/negocios/${negocio.id}/${panel}`}>{nombre}</Link>
+              ) : (
+                nombre
+              )}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )

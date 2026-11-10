@@ -22,9 +22,6 @@ export class Negocio {
   nombre: string;
 
   @Column({ type: 'varchar', nullable: true })
-  foto: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
   direccion: string | null;
 
   @Column({ type: 'varchar', nullable: true })
