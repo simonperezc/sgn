@@ -8,6 +8,7 @@ import {
   type Plantilla,
 } from './api'
 import HorarioEditor from './HorarioEditor'
+import { validarDatos, type Errores } from './validacion'
 
 interface Props {
   idToken: string
@@ -32,25 +33,6 @@ const PLANTILLAS: { valor: Plantilla; nombre: string; detalle: string }[] = [
     detalle: 'Solo las funciones del núcleo común.',
   },
 ]
-
-type Errores = Record<string, string>
-
-/** Devuelve los errores de los datos del paso 1 (RF-17). */
-function validarDatos(nombre: string, horario: Horario): Errores {
-  const errores: Errores = {}
-  if (nombre.trim() === '') {
-    errores.nombre = 'Ingresá el nombre del negocio'
-  }
-  const franjas = Object.values(horario).flat()
-  if (franjas.length === 0) {
-    errores.horarioDisponible = 'Definí el horario disponible del negocio'
-  } else if (franjas.some((franja) => !franja.inicio || !franja.fin)) {
-    errores.horarioDisponible = 'Completá las horas de inicio y fin de cada franja'
-  } else if (franjas.some((franja) => franja.fin <= franja.inicio)) {
-    errores.horarioDisponible = 'La hora de fin debe ser posterior a la de inicio'
-  }
-  return errores
-}
 
 /** CU 1, pasos 5 a 10: datos del negocio y elección de la plantilla. */
 export default function AltaNegocio({ idToken, onCreado, onSesionVencida }: Props) {

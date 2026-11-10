@@ -7,6 +7,7 @@ import { Negocio } from '../../src/nucleo/entities/negocio.entity';
 import { Cliente } from '../../src/nucleo/entities/cliente.entity';
 import { Servicio } from '../../src/nucleo/entities/servicio.entity';
 import { Turno } from '../../src/nucleo/entities/turno.entity';
+import { NegocioFoto } from '../../src/nucleo/entities/negocio-foto.entity';
 import { PoliticaPrivacidad } from '../../src/consentimiento/entities/politica-privacidad.entity';
 import { ConsentimientoInformado } from '../../src/consentimiento/entities/consentimiento-informado.entity';
 
@@ -41,6 +42,7 @@ export async function prepararBaseDePrueba(): Promise<DataSource> {
       Cliente,
       Servicio,
       Turno,
+      NegocioFoto,
       PoliticaPrivacidad,
       ConsentimientoInformado,
     ],

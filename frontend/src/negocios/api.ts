@@ -30,7 +30,19 @@ export interface Negocio {
   horarioDisponible: Horario | null
   plantilla: Plantilla
   paneles: string[]
+  tieneFoto: boolean
 }
+
+export interface Servicio {
+  id: string
+  nombre: string
+  duracionMin: number
+}
+
+export type DatosNegocio = Pick<
+  DatosNuevoNegocio,
+  'nombre' | 'contacto' | 'direccion' | 'horarioDisponible'
+>
 
 export interface DatosNuevoNegocio {
   nombre: string
@@ -53,6 +65,35 @@ export class DatosInvalidosError extends Error {
     super('Datos inválidos')
     this.campos = campos
   }
+}
+
+/** El backend rechazó la operación con un mensaje para mostrar. */
+export class OperacionRechazadaError extends Error {
+  readonly status: number
+
+  constructor(status: number, mensaje: string) {
+    super(mensaje)
+    this.status = status
+  }
+}
+
+/** Convierte una respuesta fallida en el error que corresponde mostrar. */
+async function errorDe(respuesta: Response): Promise<Error> {
+  if (respuesta.status === 401) {
+    return new SesionVencidaError()
+  }
+  const cuerpo = (await respuesta.json().catch(() => ({}))) as {
+    message?: unknown
+    campos?: ErrorCampo[]
+  }
+  if (respuesta.status === 400 && cuerpo.campos) {
+    return new DatosInvalidosError(cuerpo.campos)
+  }
+  const mensaje =
+    typeof cuerpo.message === 'string' && respuesta.status < 500
+      ? cuerpo.message
+      : 'No pudimos completar la operación. Probá de nuevo en unos minutos.'
+  return new OperacionRechazadaError(respuesta.status, mensaje)
 }
 
 function cabeceras(idToken: string): HeadersInit {
@@ -95,4 +136,105 @@ export async function crearNegocio(
     throw new Error(`Error ${respuesta.status} al crear el negocio`)
   }
   return (await respuesta.json()) as Negocio
+}
+
+export async function actualizarNegocio(
+  idToken: string,
+  negocioId: string,
+  datos: DatosNegocio,
+): Promise<Negocio> {
+  const respuesta = await fetch(`${apiUrl}/negocios/${negocioId}`, {
+    method: 'PATCH',
+    headers: cabeceras(idToken),
+    body: JSON.stringify(datos),
+  })
+  if (!respuesta.ok) {
+    throw await errorDe(respuesta)
+  }
+  return (await respuesta.json()) as Negocio
+}
+
+export async function subirFoto(
+  idToken: string,
+  negocioId: string,
+  archivo: File,
+): Promise<void> {
+  const formulario = new FormData()
+  formulario.append('foto', archivo)
+  const respuesta = await fetch(`${apiUrl}/negocios/${negocioId}/foto`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${idToken}` },
+    body: formulario,
+  })
+  if (respuesta.status === 413) {
+    throw new OperacionRechazadaError(413, 'La foto no puede superar 1 MB.')
+  }
+  if (!respuesta.ok) {
+    throw await errorDe(respuesta)
+  }
+}
+
+/** La foto requiere el token, así que no alcanza con un <img src> directo. */
+export async function descargarFoto(
+  idToken: string,
+  negocioId: string,
+): Promise<Blob> {
+  const respuesta = await fetch(`${apiUrl}/negocios/${negocioId}/foto`, {
+    headers: { Authorization: `Bearer ${idToken}` },
+    cache: 'no-store',
+  })
+  if (!respuesta.ok) {
+    throw await errorDe(respuesta)
+  }
+  return respuesta.blob()
+}
+
+export async function listarServicios(
+  idToken: string,
+  negocioId: string,
+): Promise<Servicio[]> {
+  const respuesta = await fetch(`${apiUrl}/negocios/${negocioId}/servicios`, {
+    headers: cabeceras(idToken),
+  })
+  if (!respuesta.ok) {
+    throw await errorDe(respuesta)
+  }
+  return (await respuesta.json()) as Servicio[]
+}
+
+export interface DatosServicio {
+  nombre: string
+  duracionMin: number | null
+}
+
+export async function guardarServicio(
+  idToken: string,
+  negocioId: string,
+  datos: DatosServicio,
+  servicioId?: string,
+): Promise<Servicio> {
+  const ruta = `${apiUrl}/negocios/${negocioId}/servicios`
+  const respuesta = await fetch(servicioId ? `${ruta}/${servicioId}` : ruta, {
+    method: servicioId ? 'PATCH' : 'POST',
+    headers: cabeceras(idToken),
+    body: JSON.stringify(datos),
+  })
+  if (!respuesta.ok) {
+    throw await errorDe(respuesta)
+  }
+  return (await respuesta.json()) as Servicio
+}
+
+export async function eliminarServicio(
+  idToken: string,
+  negocioId: string,
+  servicioId: string,
+): Promise<void> {
+  const respuesta = await fetch(
+    `${apiUrl}/negocios/${negocioId}/servicios/${servicioId}`,
+    { method: 'DELETE', headers: cabeceras(idToken) },
+  )
+  if (!respuesta.ok) {
+    throw await errorDe(respuesta)
+  }
 }

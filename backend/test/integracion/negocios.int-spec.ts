@@ -1,23 +1,13 @@
 import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { DataSource } from 'typeorm';
 import { prepararBaseDePrueba } from './base-datos';
-import { CognitoAuthGuard } from '../../src/auth/cognito-auth.guard';
-import { COGNITO_VERIFIER, RELOJ } from '../../src/auth/cognito.constants';
-import { OdontologiaController } from '../../src/modulos/odontologia/odontologia.controller';
 import { Negocio } from '../../src/nucleo/entities/negocio.entity';
 import { Plantilla } from '../../src/nucleo/entities/enums';
 import { Usuario } from '../../src/nucleo/entities/usuario.entity';
-import {
-  NegocioAccesoGuard,
-  PlantillaGuard,
-} from '../../src/nucleo/negocios/negocio-acceso.guard';
-import { NegocioController } from '../../src/nucleo/negocios/negocio.controller';
-import { NegocioService } from '../../src/nucleo/negocios/negocio.service';
-import { crearVerificadorDePrueba, firmarToken } from '../utils/tokens-cognito';
+import { firmarToken } from '../utils/tokens-cognito';
+import { crearAppDePrueba } from './app-prueba';
 
 interface NegocioRespuesta {
   id: string;
@@ -52,27 +42,7 @@ describe('Alta y acceso a negocios por HTTP (CU 1, RF-15, RF-22, RNF-7)', () => 
       { idIAM: IAM_B, nombre: 'Dueño B', correo: 'b@ejemplo.com' },
     ]);
 
-    const modulo = await Test.createTestingModule({
-      controllers: [NegocioController, OdontologiaController],
-      providers: [
-        NegocioService,
-        NegocioAccesoGuard,
-        PlantillaGuard,
-        CognitoAuthGuard,
-        { provide: COGNITO_VERIFIER, useValue: crearVerificadorDePrueba() },
-        { provide: RELOJ, useValue: () => Date.now() },
-        {
-          provide: getRepositoryToken(Negocio),
-          useValue: ds.getRepository(Negocio),
-        },
-        {
-          provide: getRepositoryToken(Usuario),
-          useValue: ds.getRepository(Usuario),
-        },
-      ],
-    }).compile();
-    app = modulo.createNestApplication();
-    await app.init();
+    app = await crearAppDePrueba(ds);
   });
 
   afterAll(async () => {

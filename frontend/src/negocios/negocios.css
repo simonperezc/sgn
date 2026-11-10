@@ -156,3 +156,40 @@
   color: var(--text-h);
   text-align: center;
 }
+
+.foto-negocio {
+  display: block;
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+}
+
+.area h3 {
+  margin: 8px 0 0;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.lista li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.lista button {
+  min-height: 36px;
+  padding: 4px 10px;
+  font: inherit;
+}
