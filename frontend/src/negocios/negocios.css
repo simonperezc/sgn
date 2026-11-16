@@ -250,3 +250,23 @@
   font-size: 0.85em;
   font-weight: 600;
 }
+
+.formulario textarea {
+  width: 100%;
+  padding: 6px 8px;
+  font: inherit;
+  resize: vertical;
+}
+
+.buscador {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 20px;
+}
+
+.buscador input {
+  min-height: 40px;
+  padding: 6px 8px;
+  font: inherit;
+}

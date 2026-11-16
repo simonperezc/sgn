@@ -22,7 +22,7 @@ const NOMBRE_PANEL: Record<string, string> = {
 }
 
 /** Paneles que ya tienen pantalla; el resto llega en sus sprints. */
-const PANELES_DISPONIBLES = new Set(['servicios', 'agenda'])
+const PANELES_DISPONIBLES = new Set(['servicios', 'agenda', 'clientes'])
 
 interface Props {
   idToken: string

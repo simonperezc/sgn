@@ -10,6 +10,8 @@ import {
 } from 'react-router'
 import Agenda from '../agenda/Agenda'
 import { SesionVencidaError, type Perfil } from '../auth/api'
+import Clientes from '../clientes/Clientes'
+import FichaCliente from '../clientes/FichaCliente'
 import AltaNegocio from './AltaNegocio'
 import { listarNegocios, type Negocio } from './api'
 import EditarNegocio from './EditarNegocio'
@@ -168,6 +170,36 @@ export default function AreaNegocios({
               <ConNegocio negocios={negocios}>
                 {(negocio) => (
                   <Agenda
+                    key={negocio.id}
+                    idToken={idToken}
+                    negocioId={negocio.id}
+                    onSesionVencida={onSesionVencida}
+                  />
+                )}
+              </ConNegocio>
+            }
+          />
+          <Route
+            path="/negocios/:negocioId/clientes"
+            element={
+              <ConNegocio negocios={negocios}>
+                {(negocio) => (
+                  <Clientes
+                    key={negocio.id}
+                    idToken={idToken}
+                    negocioId={negocio.id}
+                    onSesionVencida={onSesionVencida}
+                  />
+                )}
+              </ConNegocio>
+            }
+          />
+          <Route
+            path="/negocios/:negocioId/clientes/:clienteId"
+            element={
+              <ConNegocio negocios={negocios}>
+                {(negocio) => (
+                  <FichaCliente
                     key={negocio.id}
                     idToken={idToken}
                     negocioId={negocio.id}

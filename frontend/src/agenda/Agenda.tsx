@@ -134,7 +134,11 @@ export default function Agenda({ idToken, negocioId, onSesionVencida }: Props) {
                 <strong>
                   {turno.horaInicio}–{turno.horaFin}
                 </strong>{' '}
-                · {turno.cliente.nombre} · {turno.servicio.nombre}
+                ·{' '}
+                <Link to={`/negocios/${negocioId}/clientes/${turno.cliente.id}`}>
+                  {turno.cliente.nombre}
+                </Link>{' '}
+                · {turno.servicio.nombre}
                 {cancelado && <span className="etiqueta"> Cancelado</span>}
               </span>
               {!cancelado &&
