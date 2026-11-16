@@ -8,6 +8,7 @@ import { SaludModule } from './salud/salud.module';
 import { NegociosModule } from './nucleo/negocios/negocios.module';
 import { ServiciosModule } from './nucleo/servicios/servicios.module';
 import { TurnosModule } from './nucleo/turnos/turnos.module';
+import { ClientesModule } from './nucleo/clientes/clientes.module';
 import { OdontologiaModule } from './modulos/odontologia/odontologia.module';
 import { opcionesSsl } from './config/ssl';
 import { AppController } from './app.controller';
@@ -38,6 +39,7 @@ import { AppService } from './app.service';
     NegociosModule,
     ServiciosModule,
     TurnosModule,
+    ClientesModule,
     OdontologiaModule,
     SaludModule,
   ],

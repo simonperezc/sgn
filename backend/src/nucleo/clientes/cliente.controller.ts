@@ -1,7 +1,12 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +17,8 @@ import {
   NegocioAccesoGuard,
   NegocioActual,
 } from '../negocios/negocio-acceso.guard';
+import { FichaClienteService } from './ficha-cliente.service';
+import type { DatosCliente } from './ficha-cliente.service';
 import { MENSAJE_TELEFONO_INVALIDO, normalizarTelefono } from './telefono';
 
 export interface ClienteResumen {
@@ -23,7 +30,10 @@ export interface ClienteResumen {
 @Controller('negocios/:negocioId/clientes')
 @UseGuards(CognitoAuthGuard, NegocioAccesoGuard)
 export class ClienteController {
-  constructor(private readonly clientes: ClienteService) {}
+  constructor(
+    private readonly clientes: ClienteService,
+    private readonly fichas: FichaClienteService,
+  ) {}
 
   /** Con ?telefono= busca al cliente por su teléfono normalizado (RF-91). */
   @Get()
@@ -54,5 +64,30 @@ export class ClienteController {
     return cliente
       ? [{ id: cliente.id, nombre: cliente.nombre, telefono: cliente.telefono }]
       : [];
+  }
+
+  /** Alta manual (CU 11, RF-42). */
+  @Post()
+  crear(@NegocioActual() negocio: Negocio, @Body() datos: DatosCliente = {}) {
+    return this.fichas.crear(negocio.id, datos ?? {});
+  }
+
+  /** Ficha con historial (RF-43). */
+  @Get(':clienteId')
+  ficha(
+    @NegocioActual() negocio: Negocio,
+    @Param('clienteId', ParseUUIDPipe) clienteId: string,
+  ) {
+    return this.fichas.ficha(negocio.id, clienteId);
+  }
+
+  /** Notas y datos de contacto (RF-44). */
+  @Patch(':clienteId')
+  actualizar(
+    @NegocioActual() negocio: Negocio,
+    @Param('clienteId', ParseUUIDPipe) clienteId: string,
+    @Body() datos: DatosCliente = {},
+  ) {
+    return this.fichas.actualizar(negocio.id, clienteId, datos ?? {});
   }
 }

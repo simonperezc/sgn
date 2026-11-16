@@ -8,6 +8,7 @@ import { COGNITO_VERIFIER, RELOJ } from '../../src/auth/cognito.constants';
 import { OdontologiaController } from '../../src/modulos/odontologia/odontologia.controller';
 import { ClienteController } from '../../src/nucleo/clientes/cliente.controller';
 import { ClienteService } from '../../src/nucleo/cliente.service';
+import { FichaClienteService } from '../../src/nucleo/clientes/ficha-cliente.service';
 import { Cliente } from '../../src/nucleo/entities/cliente.entity';
 import { TurnoController } from '../../src/nucleo/turnos/turno.controller';
 import { TurnoService } from '../../src/nucleo/turnos/turno.service';
@@ -41,6 +42,7 @@ export async function crearAppDePrueba(
       ServicioService,
       TurnoService,
       ClienteService,
+      FichaClienteService,
       NegocioAccesoGuard,
       PlantillaGuard,
       CognitoAuthGuard,
