@@ -8,6 +8,7 @@ import {
 } from './auth/api'
 import { cerrarSesion } from './auth/cerrar-sesion'
 import ClausulaConsentimiento from './consentimiento/ClausulaConsentimiento'
+import PaginaInicial from './inicio/PaginaInicial'
 import AreaNegocios from './negocios/AreaNegocios'
 import {
   borrarConsentimientoPendiente,
@@ -112,20 +113,16 @@ export default function App() {
         </main>
       )
     }
+    // Página inicial pública: plantillas y registro convencional (CU 1 y CU 23).
     return (
-      <main>
-        <h1>Sistema de gestión de negocios</h1>
-        {aviso && <p role="alert">{aviso}</p>}
-        <button onClick={() => void auth.signinRedirect()}>Iniciar sesión</button>{' '}
-        <button
-          onClick={() => {
-            setAviso(null)
-            setMostrarClausula(true)
-          }}
-        >
-          Crear cuenta
-        </button>
-      </main>
+      <PaginaInicial
+        aviso={aviso}
+        onIniciarSesion={() => void auth.signinRedirect()}
+        onCrearCuenta={() => {
+          setAviso(null)
+          setMostrarClausula(true)
+        }}
+      />
     )
   }
 
