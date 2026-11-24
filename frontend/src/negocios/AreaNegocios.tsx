@@ -13,10 +13,12 @@ import { SesionVencidaError, type Perfil } from '../auth/api'
 import Clientes from '../clientes/Clientes'
 import FichaCliente from '../clientes/FichaCliente'
 import AltaNegocio from './AltaNegocio'
-import { listarNegocios, type Negocio } from './api'
+import { crearNegocio, listarNegocios, type DatosNuevoNegocio, type Negocio } from './api'
+import { crearNegocioDesdeBorrador } from './borrador'
 import EditarNegocio from './EditarNegocio'
 import PanelNegocio from './PanelNegocio'
 import Servicios from './Servicios'
+import type { Errores } from './validacion'
 import './negocios.css'
 
 interface Props {
@@ -55,14 +57,31 @@ export default function AreaNegocios({
 }: Props) {
   const [negocios, setNegocios] = useState<Negocio[] | null>(null)
   const [fallo, setFallo] = useState(false)
+  /** CU 23 (10a): datos del borrador que no se pudieron registrar. */
+  const [precargado, setPrecargado] = useState<{
+    datos: DatosNuevoNegocio
+    errores: Errores
+  } | null>(null)
+  /** A dónde ir desde "/" al cargar: el negocio recién creado o el alta precargada. */
+  const [destino, setDestino] = useState<string | null>(null)
   const navegar = useNavigate()
   const { pathname } = useLocation()
 
   useEffect(() => {
     let cancelado = false
-    listarNegocios(idToken)
-      .then((datos) => {
-        if (!cancelado) setNegocios(datos)
+    // CU 23, paso 10: si el usuario configuró un negocio antes de tener cuenta,
+    // se crea ahora y después se cargan todos sus negocios.
+    crearNegocioDesdeBorrador(idToken)
+      .then(async (resultado) => ({ resultado, lista: await listarNegocios(idToken) }))
+      .then(({ resultado, lista }) => {
+        if (cancelado) return
+        if (resultado.tipo === 'creado') {
+          setDestino(`/negocios/${resultado.negocio.id}`)
+        } else if (resultado.tipo === 'rechazado') {
+          setPrecargado({ datos: resultado.datos, errores: resultado.errores })
+          setDestino('/negocios/nuevo')
+        }
+        setNegocios(lista)
       })
       .catch((error: unknown) => {
         if (cancelado) return
@@ -118,7 +137,10 @@ export default function AreaNegocios({
             element={
               <Navigate
                 replace
-                to={negocios.length > 0 ? `/negocios/${negocios[0].id}` : '/negocios/nuevo'}
+                to={
+                  destino ??
+                  (negocios.length > 0 ? `/negocios/${negocios[0].id}` : '/negocios/nuevo')
+                }
               />
             }
           />
@@ -126,9 +148,14 @@ export default function AreaNegocios({
             path="/negocios/nuevo"
             element={
               <AltaNegocio
-                idToken={idToken}
+                key={precargado ? 'precargado' : 'nuevo'}
+                datosIniciales={precargado?.datos}
+                erroresIniciales={precargado?.errores}
+                textoConfirmar="Registrar negocio"
                 onSesionVencida={onSesionVencida}
-                onCreado={(negocio) => {
+                onConfirmar={async (datos) => {
+                  const negocio = await crearNegocio(idToken, datos)
+                  setPrecargado(null)
                   setNegocios([...negocios, negocio])
                   void navegar(`/negocios/${negocio.id}`)
                 }}
